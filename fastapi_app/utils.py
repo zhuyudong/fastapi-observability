@@ -1,3 +1,4 @@
+import re
 import time
 from typing import Tuple
 
@@ -146,3 +147,11 @@ def is_running_in_docker():
     #             return True
     # return False
     return True
+
+
+def is_ip_start(text: str):
+    ip_pattern = r"^\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}"
+    if re.match(ip_pattern, text):
+        return True
+    else:
+        return False

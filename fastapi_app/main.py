@@ -1,10 +1,14 @@
 import logging
 import os
 
+# import time
+# from typing import Callable
+# from uuid import uuid4
 import uvicorn
 from fastapi import FastAPI
 
 # from opentelemetry.propagate import inject
+# from fastapi_app.core.ultimate_logging import UltimateLoggingMiddleware
 from utils import PrometheusMiddleware, is_running_in_docker, metrics, setting_otlp
 
 APP_NAME = os.environ.get("APP_NAME", "app")
@@ -36,6 +40,28 @@ class EndpointFilter(logging.Filter):
 
 # Filter out /endpoint
 logging.getLogger("uvicorn.access").addFilter(EndpointFilter())
+
+# TODO
+# app.middleware("http")(UltimateLoggingMiddleware())
+
+# @app.middleware("http")
+# async def set_process_time_header(request: Request, call_next: Callable):
+#     start_time = time.time()
+#     # trace_id = uuid4().hex  # str(uuid.uuid4())
+#     # g.trace_id = trace_id
+#     # g.start_time = start_time
+#     # g.url = request.url or "unknown_url"
+#     state = request.state.__dict__.get("_state")
+#     if state.get("trace_id", None) is None:
+#         request.state.trace_id = uuid4().hex
+#     request.state.start_time = start_time
+#     request.state.url = request.url or "unknown_url"
+#     # g.endpoint", request.scope["endpoint"] or "unknown_endpoint")
+#     request.state.client_ip = request.headers.get("X-Real-Ip", "unknown")
+#     response: Response = await call_next(request)
+#     process_time = time.time() - start_time
+#     response.headers["X-Process-Time"] = str(round(process_time * 1000, 2))
+#     return response
 
 
 @app.get("/")

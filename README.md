@@ -105,4 +105,14 @@ INFO:     Application startup complete.
 
 ## TODO
 
-1. [ ] 通过 docker-compose 启动的 Loki 服务未收到单独 docker 启动的 FastAPI 服务日志 
+1. [ ] 通过 docker-compose 启动的 Loki 服务未收到单独 docker 启动的 FastAPI 服务日志
+2. [ ] 自定义日志
+
+## 本地开发好如何关联到 git 仓库
+
+1. `git init` 初始化 git 项目
+2. `git branch -M main` 修改默认主分支
+3. `git remote add origin https://github.com/zhuyudong/fastapi-observability.git` 设置远程仓库地址
+4. `git branch --set-upstream-to=origin/main main` 关联远程分支
+5. `git pull --allow-unrelated-histories` 允许和本地修改合并
+6. `git add . && git commit -m "feat: xxx" && git push` 提交
