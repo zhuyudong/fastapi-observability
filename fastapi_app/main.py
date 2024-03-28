@@ -16,7 +16,7 @@ async def root():
 if __name__ == "__main__":
     # update uvicorn access logger format
     uvicorn.run(
-        "main:app",
+        "fastapi_app.main:app",
         host="0.0.0.0",
         port=8000,
         reload=True,

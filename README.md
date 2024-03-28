@@ -5,7 +5,7 @@
 1. 使用 debugpy 模块启动
 
 ```bash
-python -m debugpy --listen 5678 --wait-for-client main.py
+python -m debugpy --listen 5678 --wait-for-client fastapi_app/main.py
 ```
 
 2. 打开 VSCode debug "Python: Debug Attach"
