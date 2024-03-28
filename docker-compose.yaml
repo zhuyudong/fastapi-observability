@@ -1,0 +1,114 @@
+x-logging: &default-logging
+  driver: loki
+  options:
+    loki-url: 'http://localhost:3100/api/prom/push'
+    loki-pipeline-stages: |
+      - multiline:
+          firstline: '^\d{4}-\d{2}-\d{2} \d{1,2}:\d{2}:\d{2}'
+          max_wait_time: 3s
+      - regex:
+          expression: '^(?P<time>\d{4}-\d{2}-\d{2} \d{1,2}:\d{2}:\d{2},\d{3}) (?P<message>(?s:.*))$$'
+
+version: "3.9"
+
+services:
+  loki:
+    image: grafana/loki:2.9.3
+    command: -config.file=/etc/loki/local-config.yaml
+    ports:
+      - "3100:3100"
+    networks:
+      - fastapi_observability_network
+
+  # app-a:
+  #   build: ./fastapi_app/
+  #   # NOTE: default image repository is fastapi-observability_app-a，产生 3 个同样 image id 的镜像
+  #   # NOTE: default container_name is fastapi-observability_app-a
+  #   container_name: app-a
+  #   ports:
+  #     - "8000:8000"
+  #     - "5678:5678"
+  #   volumes:
+  #     - ./:/app/fastapi_app
+  #   depends_on:
+  #     - loki
+  #   environment:
+  #     APP_NAME: "app-a"
+  #   logging: *default-logging
+
+  # app-b:
+  #   build: ./fastapi_app/
+  #   container_name: app-b
+  #   ports:
+  #     - "8001:8000"
+  #     - "5679:5678"
+  #   volumes:
+  #     - ./:/app/fastapi_app
+  #   depends_on:
+  #     - loki
+  #   environment:
+  #     APP_NAME: "app-b"
+  #   logging: *default-logging
+
+  # app-c:
+  #   build: ./fastapi_app/
+  #   container_name: app-c
+  #   ports:
+  #     - "8002:8000"
+  #     - "5680:5678"
+  #   volumes:
+  #     - ./:/app/fastapi_app
+  #   depends_on:
+  #     - loki
+  #   environment:
+  #     APP_NAME: "app-c"
+  #   logging: *default-logging
+
+  prometheus:
+    image: prom/prometheus:v2.48.1
+    ports:
+      - "9090:9090"
+    volumes:
+      - ./etc/prometheus:/workspace
+    command:
+      - --config.file=/workspace/prometheus.yml
+      - --enable-feature=exemplar-storage
+    networks:
+      - fastapi_observability_network
+    depends_on:
+      - loki
+    logging: *default-logging
+
+  tempo:
+    image: grafana/tempo:2.3.1
+    command: [ "--target=all", "--storage.trace.backend=local", "--storage.trace.local.path=/var/tempo", "--auth.enabled=false" ]
+    ports:
+      - "4317:4317"
+      - "4318:4318"
+    networks:
+      - fastapi_observability_network
+    depends_on:
+      - loki
+    logging: *default-logging
+
+  grafana:
+    image: grafana/grafana:10.2.3
+    ports:
+      - "3000:3000"
+    volumes:
+      - ./etc/grafana/:/etc/grafana/provisioning/datasources
+      - ./etc/dashboards.yaml:/etc/grafana/provisioning/dashboards/dashboards.yaml
+      - ./etc/dashboards:/etc/grafana/dashboards
+    networks:
+      - fastapi_observability_network
+    depends_on:
+      - loki
+      - prometheus
+    logging: *default-logging
+
+networks:
+  fastapi_observability_network:
+    driver: bridge
+# docker-compose up --build
+# docker-compose up --build --force-recreate
+# docker-compose up --build -d
